@@ -112,8 +112,6 @@ public class SampleTest {
 
         Assertions.assertNotNull(key);
 
-        EcPrivateJwk kk = (EcPrivateJwk) key;
-
     }
 
     @Test
