@@ -73,14 +73,14 @@ public class SampleTest {
         var envelope = new Envelope();
 
         Header header = new Header();
-        val object = new org.gobl.model.Object();
+
         List<String> sigs = new ArrayList<>();
         sigs.add("signature1");
         sigs.add("signature2");
 
         envelope.set$schema("http://json-schema.org/draft/2020-12/schema");
         envelope.setHead(header);
-        envelope.setDoc(object);
+
         envelope.setSigs(sigs);
 
         ObjectNode envelopNode = mapper.valueToTree(envelope);

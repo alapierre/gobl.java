@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.alapierre.ksef.fa.model.gobl.exceptions.JsonParserException;
 import lombok.NonNull;
-import org.gobl.model.Invoice;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,7 +57,7 @@ public abstract class GoblSerializer<T> {
 
     public void toFile(@NonNull File file, @NonNull T value) throws IOException {
         try {
-            mapper.writeValue(file, value);
+            mapper.writerWithDefaultPrettyPrinter().writeValue(file, value);
         } catch (StreamWriteException | DatabindException e) {
             throw new JsonParserException(e);
         }
@@ -66,7 +65,7 @@ public abstract class GoblSerializer<T> {
 
     public void toStream(@NonNull OutputStream outputStream, @NonNull T value) throws IOException {
         try {
-            mapper.writeValue(outputStream, value);
+            mapper.writerWithDefaultPrettyPrinter().writeValue(outputStream, value);
         } catch (StreamWriteException | DatabindException e) {
             throw new JsonParserException(e);
         }
@@ -74,7 +73,7 @@ public abstract class GoblSerializer<T> {
 
     public String toString(@NonNull T value) {
         try {
-            return mapper.writeValueAsString(value);
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(value);
         } catch (JsonProcessingException e) {
             throw new JsonParserException(e);
         }

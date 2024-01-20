@@ -3,7 +3,7 @@ package io.alapierre.gobl.core.signature;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.*;
-import lombok.val;
+import org.gobl.model.Header;
 
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
@@ -29,6 +29,18 @@ public class EcdsaSigner {
                 .signWith(privateKey, Jwts.SIG.ES256)
                 .compact();
     }
+
+    public String sign(ECPrivateKey privateKey, String kid, Header header) {
+
+        return Jwts.builder()
+                .claim("uuid", header.getUuid())
+                .claim("dig", header.getDig())
+                .header().add("kid", kid).and()
+                .signWith(privateKey, Jwts.SIG.ES256)
+                .compact();
+    }
+
+
 
     public void verify(ECPublicKey publicKey, String jwsString) {
 
