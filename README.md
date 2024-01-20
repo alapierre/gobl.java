@@ -66,7 +66,7 @@ gobl.saveInvoice(invoice, System.out);
 ````xml
 <dependency>
     <groupId>io.alapierre.gobl</groupId>
-    <artifactId>gobl-model</artifactId>
+    <artifactId>gobl-core</artifactId>
     <version>0.0.1</version>
 </dependency>
 ````
