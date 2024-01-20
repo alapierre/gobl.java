@@ -61,6 +61,16 @@ Gobl gobl = new Gobl();
 gobl.saveInvoice(invoice, System.out);
 ````
 
+## Maven dependency
+
+````xml
+<dependency>
+    <groupId>io.alapierre.gobl</groupId>
+    <artifactId>gobl-model</artifactId>
+    <version>0.0.1</version>
+</dependency>
+````
+
 ## Build requirements
 
 The project can be built on JDK17+.
