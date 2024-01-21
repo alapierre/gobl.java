@@ -4,11 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.alapierre.gobl.core.signature.EcdsaSigner;
 import io.alapierre.gobl.core.signature.JsonCanoniser;
 import io.alapierre.gobl.core.signature.KeySupport;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.val;
 import org.gobl.model.Envelope;
 import org.gobl.model.Invoice;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.Key;
@@ -126,6 +128,44 @@ class GoblTest {
         Key publicKey = keySupport.loadKey(Path.of("src/test/resources/id_es256.pub.jwk"));
         signer.verify((ECPublicKey) publicKey, signature);
 
+    }
+
+    @Test
+    void parseEnvelope() throws Exception {
+
+        File file = new File("src/test/resources/invoice-signed.json");
+
+        Invoice invoice = gobl.extractFromEnvelope(file, Invoice.class);
+
+        System.out.println(invoice);
+        assertNotNull(invoice);
+    }
+
+    @Test
+    void parseEnvelopeAndCheckSignature() throws Exception {
+
+        File file = new File("src/test/resources/invoice-signed.json");
+
+        KeySupport keySupport = new KeySupport();
+        Key publicKey = keySupport.loadKey(Path.of("src/test/resources/id_es256.pub.jwk"));
+
+        Invoice invoice = gobl.extractFromEnvelope(file, Invoice.class, publicKey);
+
+        System.out.println(invoice);
+        assertNotNull(invoice);
+    }
+
+    @Test
+    void parseEnvelopeAndCheckInvalidSignature() throws Exception {
+
+        File file = new File("src/test/resources/invoice-signed-not-valid.json");
+
+        KeySupport keySupport = new KeySupport();
+        Key publicKey = keySupport.loadKey(Path.of("src/test/resources/id_es256.pub.jwk"));
+
+        assertThrows(SignatureException.class, () -> {
+            Invoice invoice = gobl.extractFromEnvelope(file, Invoice.class, publicKey);
+        });
     }
 
 }

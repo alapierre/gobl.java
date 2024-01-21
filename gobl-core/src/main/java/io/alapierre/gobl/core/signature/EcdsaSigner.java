@@ -42,13 +42,14 @@ public class EcdsaSigner {
 
 
 
-    public void verify(ECPublicKey publicKey, String jwsString) {
+    public Map<String, String> verify(ECPublicKey publicKey, String jwsString) {
 
         Jws<Claims> jws = Jwts.parser()
                     .verifyWith(publicKey)
                     .build()
                     .parseSignedClaims(jwsString); //  or parseSignedContent(jwsString)
 
+        return jws.getPayload().get("dig", Map.class);
     }
 
 }

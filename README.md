@@ -10,12 +10,14 @@
 - make `Invoice` signature and save it as an `Envelop`
 - save `Invoice` to file
 - load and save JWK keys from/to file
+- `Invoice` extract from `Envelop`
+- signature verification when extract document from `Envelop`
 
 ## Current limitation
 
 - The only possible type of document that can be placed inside a signed Envelope is an Invoice. This decision is dictated by the simplification of implementation at this stage of the project.
 - There is no tax calculation logic
-- No `Invoice` extract from `Envelop` with signature verification
+
 - and much, much more — some help is more than welcome
 
 ### Parse Invoice
