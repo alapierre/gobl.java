@@ -6,16 +6,16 @@
 
 ## Early stage functionality
 
-- parse Invoice from Json file
-- make Invoice signature and save it as an Envelop
-- save Invoice to file
+- parse `Invoice` from Json file
+- make `Invoice` signature and save it as an `Envelop`
+- save `Invoice` to file
+- load and save JWK keys from/to file
 
 ## Current limitation
 
 - The only possible type of document that can be placed inside a signed Envelope is an Invoice. This decision is dictated by the simplification of implementation at this stage of the project.
 - There is no tax calculation logic
-- No signature validation
-- No JWK keys load functionality
+- No `Invoice` extract from `Envelop` with signature verification
 - and much, much more — some help is more than welcome
 
 ### Parse Invoice
@@ -42,6 +42,24 @@ public class Main {
         val keys = keySupport.generate();
 
         val envelope = gobl.signInvoice("src/test/resources/invoice.json", keys.privateKey(), UUID.randomUUID());
+        System.out.println(envelope);
+    }
+    
+}
+````
+
+### Sign Invoice with key from file
+
+````java
+public class Main {
+
+    public static void main(String[] args) {
+        Gobl gobl = new Gobl();
+
+        KeySupport keySupport = new KeySupport();
+        Key key = keySupport.loadKey(Path.of("src/test/resources/id_es256.jwk"));
+
+        val envelope = gobl.signInvoice("src/test/resources/invoice.json", (ECPrivateKey) key, UUID.randomUUID());
         System.out.println(envelope);
     }
     

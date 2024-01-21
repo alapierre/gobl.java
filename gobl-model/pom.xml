@@ -33,6 +33,7 @@
                     <targetPackage>org.gobl.model</targetPackage>
                     <annotationStyle>JACKSON2</annotationStyle>
                     <generateBuilders>true</generateBuilders>
+                    <inclusionLevel>NON_EMPTY</inclusionLevel>
                 </configuration>
                 <executions>
                     <execution>

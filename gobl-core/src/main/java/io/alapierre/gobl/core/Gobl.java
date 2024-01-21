@@ -1,16 +1,18 @@
 package io.alapierre.gobl.core;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.alapierre.gobl.core.signature.EcdsaSigner;
-import io.alapierre.gobl.core.signature.KeySupport;
+import io.alapierre.gobl.core.signature.JsonCanoniser;
 import io.alapierre.ksef.fa.model.gobl.InvoiceSerializer;
 import lombok.NonNull;
 import lombok.val;
-import org.gobl.model.Object;
-import org.gobl.model.*;
+import org.gobl.model.Digest;
+import org.gobl.model.Envelope;
+import org.gobl.model.Header;
+import org.gobl.model.Invoice;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -19,7 +21,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.ECPrivateKey;
 import java.util.HexFormat;
 import java.util.List;
-import java.util.TreeMap;
 import java.util.UUID;
 
 /**
@@ -29,9 +30,12 @@ import java.util.UUID;
 public class Gobl {
 
     private final EcdsaSigner signer = new EcdsaSigner();
-    private final KeySupport keySupport = new KeySupport();
+    private final ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    private final JsonCanoniser jsonCanoniser = new JsonCanoniser();
 
-    public Gobl() {}
+    public Gobl() {
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
 
     public void saveInvoice(Invoice invoice, String fileName) throws IOException {
         try (val out = new FileOutputStream(fileName)){
@@ -79,57 +83,59 @@ public class Gobl {
         }
     }
 
+    public String signInvoice(Invoice invoice, ECPrivateKey privateKey, UUID kid) throws IOException {
+        String canonicalJson = jsonCanoniser.parse(invoice);
+        val header = makeHeader(digest(canonicalJson));
+        val signedString = signer.sign(privateKey, kid.toString(), header);
+        return prepareEnvelope(header, signedString, invoice);
+    }
+
     public String signInvoice(InputStream source, ECPrivateKey privateKey, UUID kid) throws IOException {
-
         byte[] content = source.readAllBytes();
+        String canonicalJson = jsonCanoniser.parse(content);
+        val header = makeHeader(digest(canonicalJson));
+        val signedString = signer.sign(privateKey, kid.toString(), header);
+        val invoice = objectMapper.readValue(content, Invoice.class);
+        return prepareEnvelope(header, signedString, invoice);
+    }
 
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
-
-        JsonNode jsonNode = mapper.readTree(content);
-
-        @SuppressWarnings("unchecked")
-        TreeMap<String, Object> map = mapper.convertValue(jsonNode, TreeMap.class);
-        String canonicalJson = mapper.writeValueAsString(map);
-
-        val header = digestAndMakeHeader(canonicalJson);
-
-        val sig = signer.sign(privateKey, kid.toString(), header);
-
+    private String prepareEnvelope(Header header, String signedString, Invoice invoice) throws IOException {
         Envelope envelope = new Envelope();
         envelope.set$schema("https://gobl.org/draft-0/envelope");
         envelope.setHead(header);
-        envelope.setSigs(List.of(sig));
+        envelope.setSigs(List.of(signedString));
 
-        mapper.configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, false);
-
-        val invoice = mapper.readValue(content, Invoice.class);
-        ObjectNode invoiceNode = mapper.valueToTree(invoice);
+        ObjectNode invoiceNode = objectMapper.valueToTree(invoice);
         invoiceNode.put("$schema", "https://gobl.org/draft-0/bill/invoice");
-
-        ObjectNode envelopNode = mapper.valueToTree(envelope);
+        ObjectNode envelopNode = objectMapper.valueToTree(envelope);
         envelopNode.set("doc", invoiceNode);
-
-        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(envelopNode);
+        return objectMapper.writeValueAsString(envelopNode);
     }
 
-    protected Header digestAndMakeHeader(@NonNull String canonicalJson) {
+    public String digest(@NonNull Invoice invoice) throws IOException {
+        return digest(jsonCanoniser.parse(invoice));
+    }
+
+    public String digest(@NonNull String canonicalJson) {
         try {
             val md = MessageDigest.getInstance("SHA-256");
             val sha = md.digest(canonicalJson.getBytes());
-            val str = HexFormat.of().formatHex(sha);
+            return HexFormat.of().formatHex(sha);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
+    protected Header makeHeader(@NonNull String digestString) {
 
             Header header = new Header();
             Digest digest = new Digest();
-            digest.setVal(str);
+            digest.setVal(digestString);
             digest.setAlg("sha256");
 
             header.setDig(digest);
             header.setUuid(UUID.randomUUID());
             return header;
-        } catch (NoSuchAlgorithmException ex) {
-            throw new IllegalStateException(ex);
-        }
     }
 
 }
