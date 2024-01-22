@@ -188,6 +188,11 @@ class GoblTest {
 
         System.out.println(invoice);
         assertNotNull(invoice);
+        assertEquals("123456789", invoice.getCode());
+        assertEquals("standard", invoice.getType());
+        assertEquals("2024-01-15", invoice.getIssueDate());
+        assertEquals("Customer sp. z o.o.", invoice.getCustomer().getName());
+
     }
 
     @Test
@@ -199,7 +204,7 @@ class GoblTest {
         Key publicKey = keySupport.loadKey(Path.of("src/test/resources/id_es256.pub.jwk"));
 
         assertThrows(SignatureException.class, () -> {
-            Invoice invoice = gobl.extractFromEnvelope(file, Invoice.class, publicKey);
+            gobl.extractFromEnvelope(file, Invoice.class, publicKey);
         });
     }
 

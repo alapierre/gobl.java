@@ -79,8 +79,7 @@ public class Gobl {
             }
         });
 
-        return objectMapper.treeToValue(docNode, clazz);
-
+        return doc;
     }
 
     /**
