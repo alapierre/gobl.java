@@ -43,6 +43,16 @@ public class Gobl {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
+    /**
+     * Extracts the document from an envelope JSON file.
+     *
+     * @param envelopeFile The envelope JSON file from which to extract the document, e.g., Invoice.
+     * @param clazz        The class representing the type of the document.
+     * @param key          The ECPublicKey used for signature verification.
+     * @return The extracted document.
+     * @throws IOException          If an I/O error occurs when reading or parsing the envelope file.
+     * @throws SignatureException   If the digital signature verification fails.
+     */
     public <T> T extractFromEnvelope(File envelopeFile, Class<T> clazz, Key key) throws IOException {
 
         val envelopeNode = objectMapper.readValue(envelopeFile, ObjectNode.class);
@@ -59,7 +69,7 @@ public class Gobl {
         // TODO: check signature here with proper key
         sigs.forEach(s -> {
             log.debug("checking signature {}", s);
-            String digest = signer.verify((ECPublicKey) key, s).get("val"); //TODO make it better
+            String digest = signer.verify((ECPublicKey) key, s).val();
 
             if (contentDigest.equals(digest))
                 log.debug("digest are equals");
@@ -73,58 +83,134 @@ public class Gobl {
 
     }
 
+    /**
+     * Extracts an object of type T from an envelope file without signature verification.
+     *
+     * @param envelopeFile the envelope JSON file to extract the object from
+     * @param clazz the class of the object to be extracted
+     * @return The extracted document
+     * @throws IOException if an I/O error occurs while reading the envelope file
+     */
     public <T> T extractFromEnvelope(File envelopeFile, Class<T> clazz) throws IOException {
         val envelopeNode = objectMapper.readValue(envelopeFile, ObjectNode.class);
         val docNode = envelopeNode.get("doc");
         return objectMapper.treeToValue(docNode, clazz);
     }
 
+    /**
+     * Saves the given invoice to the specified file.
+     *
+     * @param invoice The invoice to be saved.
+     * @param fileName The name of the file where the invoice will be saved.
+     * @throws IOException If there is an error while saving the invoice to the file.
+     */
     public void saveInvoice(Invoice invoice, String fileName) throws IOException {
         try (val out = new FileOutputStream(fileName)){
             saveInvoice(invoice, out);
         }
     }
 
+    /**
+     * Save the given invoice to the specified file path.
+     *
+     * @param invoice the invoice to be saved
+     * @param path the file path where the invoice should be saved
+     * @throws IOException if there is an error during the saving process
+     */
     public void saveInvoice(Invoice invoice, Path path) throws IOException {
         try (val out = new FileOutputStream(path.toFile())){
             saveInvoice(invoice, out);
         }
     }
 
+    /**
+     * Saves the given invoice to the specified output stream.
+     *
+     * @param invoice the invoice to be saved
+     * @param outputStream the output stream to save the invoice to
+     * @throws IOException if an I/O error occurs while saving the invoice
+     */
     public void saveInvoice(Invoice invoice, OutputStream outputStream) throws IOException {
         InvoiceSerializer serializer = new InvoiceSerializer();
         serializer.toStream(outputStream, invoice);
     }
 
+    /**
+     * Parses an invoice JSON file and returns the corresponding Invoice object.
+     *
+     * @param invoiceFile the name and path to the invoice file to be parsed
+     * @return the parsed Invoice object
+     * @throws IOException if an I/O error occurs while reading the invoice file
+     */
     public Invoice parseInvoice(String invoiceFile) throws IOException {
         try (val is = new FileInputStream(invoiceFile)) {
             return parseInvoice(is);
         }
     }
 
+    /**
+     * Parses an Invoice from the specified file.
+     *
+     * @param source the path to the file containing the Invoice data
+     * @return the parsed Invoice object
+     * @throws IOException if an I/O error occurs while reading the file
+     */
     public Invoice parseInvoice(Path source) throws IOException {
         try (val is = new FileInputStream(source.toFile())) {
             return parseInvoice(is);
         }
     }
 
+    /**
+     * Parses an invoice from an input stream.
+     *
+     * @param source the input stream containing the invoice data
+     * @return the parsed invoice object
+     */
     public Invoice parseInvoice(InputStream source) {
         InvoiceSerializer serializer = new InvoiceSerializer();
         return serializer.fromStream(source);
     }
 
+    /**
+     * Signs the invoice JSON file using the provided private key and it ID.
+     *
+     * @param invoiceFile The path to the invoice file to be signed.
+     * @param privateKey The ECPrivateKey object representing the private key.
+     * @param kid The key identifier associated with the private key.
+     * @return A string representing the signed invoice in JSON format.
+     * @throws IOException If an I/O error occurs while reading the invoice file.
+     */
     public String signInvoice(Path invoiceFile, ECPrivateKey privateKey, UUID kid) throws IOException {
         try (val is = new FileInputStream(invoiceFile.toFile())) {
             return signInvoice(is, privateKey, kid);
         }
     }
 
+    /**
+     * Signs the invoice file with the specified private key and returns the signature as a JSON string.
+     *
+     * @param invoiceFile The path to the invoice file.
+     * @param privateKey The ECPrivateKey used for signing the invoice.
+     * @param kid The key identifier associated with the private key.
+     * @return A string representing the signed invoice in JSON format.
+     * @throws IOException if an I/O error occurs while reading the invoice file.
+     */
     public String signInvoice(String invoiceFile, ECPrivateKey privateKey, UUID kid) throws IOException {
         try (val is = new FileInputStream(invoiceFile)) {
             return signInvoice(is, privateKey, kid);
         }
     }
 
+    /**
+     * Signs the given invoice instance using the provided private key and its identifier.
+     *
+     * @param invoice The invoice object to be signed.
+     * @param privateKey The private key used for signing the invoice.
+     * @param kid The key identifier associated with the private key.
+     * @return The signed invoice as an envelope.
+     * @throws IOException If an I/O error occurs while signing the invoice.
+     */
     public String signInvoice(Invoice invoice, ECPrivateKey privateKey, UUID kid) throws IOException {
         String canonicalJson = jsonCanoniser.parse(invoice);
         val header = makeHeader(digest(canonicalJson));
@@ -132,6 +218,15 @@ public class Gobl {
         return prepareEnvelope(header, signedString, invoice);
     }
 
+    /**
+     * Signs an invoice by providing the InputStream, the EC private key and its identifier.
+     *
+     * @param source    the input stream representing the invoice source JSON file
+     * @param privateKey   the EC private key to be used for signing
+     * @param kid   The key identifier associated with the private key.
+     * @return a string representing the signed invoice
+     * @throws IOException if an I/O error occurs while reading the input stream
+     */
     public String signInvoice(InputStream source, ECPrivateKey privateKey, UUID kid) throws IOException {
         byte[] content = source.readAllBytes();
         String canonicalJson = jsonCanoniser.parse(content);
@@ -154,10 +249,24 @@ public class Gobl {
         return objectMapper.writeValueAsString(envelopNode);
     }
 
+    /**
+     * Calculates the SHA-256 digest of the given invoice object using JSON canonicalization.
+     *
+     * @param invoice The invoice to calculate the digest for. Must not be null.
+     * @return The SHA-256 digest of the invoice.
+     * @throws IOException If an IO error occurs during the digest calculation.
+     */
     public String digest(@NonNull Invoice invoice) throws IOException {
         return digest(jsonCanoniser.parse(invoice));
     }
 
+    /**
+     * Computes the SHA-256 digest of the given canonical JSON string.
+     *
+     * @param canonicalJson the canonical JSON string to compute the digest for
+     * @return the SHA-256 digest of the canonical JSON string
+     * @throws IllegalStateException if the SHA-256 algorithm is not available
+     */
     public String digest(@NonNull String canonicalJson) {
         try {
             val md = MessageDigest.getInstance("SHA-256");

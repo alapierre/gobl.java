@@ -1,11 +1,8 @@
 package io.alapierre.gobl.core.signature;
 
-import lombok.Data;
 import lombok.Value;
 import lombok.val;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Adrian Lapierre {@literal al@alapierre.io}
@@ -20,7 +17,7 @@ class EcdsaSignerTest {
         KeySupport keySupport = new KeySupport();
         val keys = keySupport.generate();
 
-        val signature = signer.sign(keys.privateKey(), new Model("Jan Kowalski", 11));
+        val signature = signer.sign(keys.privateKey(), new Model("Jan Kowalski", 11), "example");
         signer.verify(keys.publicKey(), signature);
 
     }
