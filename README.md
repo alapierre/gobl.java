@@ -11,14 +11,13 @@
 - save `Invoice` to file
 - load and save JWK keys from/to file
 - `Invoice` extract from `Envelop`
-- signature verification when extract document from `Envelop`
+- signature verification when extract document from `Envelop` (only signature by one, provided key is checked)
 
 ## Current limitation
 
 - The only possible type of document that can be placed inside a signed Envelope is an Invoice. This decision is dictated by the simplification of implementation at this stage of the project.
 - There is no tax calculation logic
-
-- and much, much more — some help is more than welcome
+- and much, much more — so help is more than welcome
 
 ### Parse Invoice
 
@@ -66,6 +65,22 @@ public class Main {
     }
     
 }
+````
+
+### Check signature and extract `Invoice` from `Envelope`
+
+````java
+try{
+    File file = new File("src/test/resources/invoice-signed.json");
+    KeySupport keySupport = new KeySupport();
+    Key publicKey = keySupport.loadKey(Path.of("src/test/resources/id_es256.pub.jwk"));
+    
+    Invoice invoice = gobl.extractFromEnvelope(file, Invoice.class, publicKey); 
+    // validation OK
+    System.out.println(invoice);
+    } catch (SignatureException ex) {
+        // validation failed
+    }   
 ````
 
 ### Create and Save Invoice

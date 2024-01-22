@@ -203,4 +203,16 @@ class GoblTest {
         });
     }
 
+    @Test
+    void parseEnvelopeAndCheckWithWrongKey() throws Exception {
+
+        File file = new File("src/test/resources/invoice-signed.json");
+
+        KeySupport keySupport = new KeySupport();
+
+        assertThrows(SignatureException.class, () -> {
+            Invoice invoice = gobl.extractFromEnvelope(file, Invoice.class, keySupport.generate().publicKey());
+        });
+    }
+
 }
