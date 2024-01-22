@@ -71,13 +71,35 @@ public class Main {
 ### Create and Save Invoice
 
 ````java
-Invoice invoice = new Invoice();
-
-invoice.setCode("standard");
-invoice.setIssueDate("2024-01-01");
+val invoice = new Invoice()
+        .withCode("standard")
+        .withIssueDate("2024-01-01")
+        .withCustomer(new Party()
+                .withName("Company INC")
+                .withAddresses(List.of(new Address()
+                        .withCountry("Poland")
+                        .withCode("05-092")
+                        .withStreet("Warszawska")))
+                .withTaxId(new Identity()
+                        .withCode("2222222222")
+                        .withCountry("PL"))
+        ).withCustomer(new Party()
+                .withName("Customer sp. z o.o.")
+                .withAddresses(List.of(new Address()
+                        .withCountry("Poland")
+                        .withCode("05-092")
+                        .withStreet("Warszawska")))
+                .withTaxId(new Identity()
+                        .withCode("1111111111")
+                        .withCountry("PL"))
+        ).withLines(List.of(new Line()
+                .withI(1)
+                .withItem(new Item()
+                        .withName("Myszka")
+                        .withCurrency("PLN")
+                        .withPrice("100"))));
 
 Gobl gobl = new Gobl();
-
 gobl.saveInvoice(invoice, System.out);
 ````
 

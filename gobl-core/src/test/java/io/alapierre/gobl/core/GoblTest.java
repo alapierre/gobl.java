@@ -6,8 +6,7 @@ import io.alapierre.gobl.core.signature.JsonCanoniser;
 import io.alapierre.gobl.core.signature.KeySupport;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.val;
-import org.gobl.model.Envelope;
-import org.gobl.model.Invoice;
+import org.gobl.model.*;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -16,6 +15,7 @@ import java.nio.file.Path;
 import java.security.Key;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,6 +28,41 @@ class GoblTest {
 
     final ObjectMapper objectMapper = new ObjectMapper();
     final Gobl gobl = new Gobl();
+
+    @Test
+    void create() throws Exception {
+
+        val invoice = new Invoice()
+                .withCode("standard")
+                .withIssueDate("2024-01-01")
+                .withCustomer(new Party()
+                        .withName("Company INC")
+                        .withAddresses(List.of(new Address()
+                                .withCountry("Poland")
+                                .withCode("05-092")
+                                .withStreet("Warszawska")))
+                        .withTaxId(new Identity()
+                                .withCode("2222222222")
+                                .withCountry("PL"))
+                ).withCustomer(new Party()
+                        .withName("Customer sp. z o.o.")
+                        .withAddresses(List.of(new Address()
+                                .withCountry("Poland")
+                                .withCode("05-092")
+                                .withStreet("Warszawska")))
+                        .withTaxId(new Identity()
+                                .withCode("1111111111")
+                                .withCountry("PL"))
+                ).withLines(List.of(new Line()
+                        .withI(1)
+                        .withItem(new Item()
+                                .withName("Myszka")
+                                .withCurrency("PLN")
+                                .withPrice("100"))));
+
+        Gobl gobl = new Gobl();
+        gobl.saveInvoice(invoice, System.out);
+    }
 
     @Test
     void sign() throws Exception {
