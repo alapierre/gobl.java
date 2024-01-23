@@ -11,7 +11,7 @@
 - save `Invoice` to file
 - load and save JWK keys from/to file
 - `Invoice` extract from `Envelop`
-- signature verification when extract document from `Envelop` (only signature made by one, provided for a verification key is checked)
+- signature verification when extract document from `Envelop` (only one signature is supported now)
 
 ## Current limitation
 
