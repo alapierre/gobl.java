@@ -1,6 +1,5 @@
 package io.alapierre.gobl.core.signature;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.security.EcPrivateJwk;
 import io.jsonwebtoken.security.EcPublicJwk;
 import io.jsonwebtoken.security.Jwks;
@@ -24,8 +23,6 @@ import java.util.UUID;
  */
 @Slf4j
 public class KeySupport {
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public KeyPairHolder<ECPrivateKey, ECPublicKey> generate() {
 

@@ -222,8 +222,10 @@ class GoblTest {
 
         File file = new File("src/test/resources/invoice.json");
 
+        val key = new KeySupport().generate().publicKey();
+
         assertThrows(IllegalArgumentException.class, () ->
-                gobl.extractFromEnvelope(file, Invoice.class, new KeySupport().generate().publicKey()));
+                gobl.extractFromEnvelope(file, Invoice.class, key));
 
     }
 
@@ -231,9 +233,10 @@ class GoblTest {
     void parseNotSignedDocument() throws IOException {
 
         File file = new File("src/test/resources/envelop-not-signed.json");
+        val key = new KeySupport().generate().publicKey();
 
         assertThrows(SignatureException.class, () ->
-                gobl.extractFromEnvelope(file, Invoice.class, new KeySupport().generate().publicKey()));
+                gobl.extractFromEnvelope(file, Invoice.class, key));
 
     }
 
@@ -241,9 +244,10 @@ class GoblTest {
     void parseMoreThanOneSignedDocument() throws IOException {
 
         File file = new File("src/test/resources/invoice-two-signatures.json");
+        val key = new KeySupport().generate().publicKey();
 
         assertThrows(SignatureException.class, () ->
-                gobl.extractFromEnvelope(file, Invoice.class, new KeySupport().generate().publicKey()));
+                gobl.extractFromEnvelope(file, Invoice.class, key));
 
     }
 
