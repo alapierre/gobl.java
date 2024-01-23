@@ -7,6 +7,7 @@ import io.alapierre.gobl.core.signature.KeySupport;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.val;
 import org.gobl.model.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -158,6 +159,7 @@ class GoblTest {
         val header = gobl.makeHeader(gobl.digest(canonicalJson));
         val signature = signer.sign((ECPrivateKey) key, "9d8dba19-d041-409c-a451-74e0df6b548a", header);
 
+        Assertions.assertNotNull(signature);
         System.out.println(signature);
 
         Key publicKey = keySupport.loadKey(Path.of("src/test/resources/id_es256.pub.jwk"));

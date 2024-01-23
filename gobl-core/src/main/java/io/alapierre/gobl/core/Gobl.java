@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.alapierre.gobl.core.exceptions.NoSuchDigestAlgorithmException;
 import io.alapierre.gobl.core.signature.EcdsaSigner;
 import io.alapierre.gobl.core.signature.JsonCanoniser;
 import io.alapierre.ksef.fa.model.gobl.InvoiceSerializer;
@@ -62,23 +63,28 @@ public class Gobl {
         List<String> sigs = objectMapper.treeToValue(sigsNode, type);
 
         val docNode = envelopeNode.get("doc");
+        if(docNode == null) throw new IllegalArgumentException("Envelop must contains document in 'doc' attribute");
+
         val doc = objectMapper.treeToValue(docNode, clazz);
         val canonizedJson = jsonCanoniser.parse(doc);
-        val contentDigest = digest(canonizedJson);
 
-        // TODO: check signature here with proper key
-        sigs.forEach(s -> {
-            log.debug("checking signature {}", s);
-            String digest = signer.verify((ECPublicKey) key, s).val();
+        if(sigs.isEmpty()) {
+            throw new SignatureException("No signatures found.");
+        } else if (sigs.size() > 1) {
+            throw new SignatureException("Multiple signatures are not supported.");
+        }
 
-            if (contentDigest.equals(digest))
-                log.debug("digest are equals");
-            else {
-                log.debug("digest form signature {} != {}", digest, contentDigest);
-                throw new SignatureException("Digital signature verification failed.");
-            }
-        });
+        val s = sigs.get(0);
+        log.debug("checking signature {}", s);
+        val dig = signer.verify((ECPublicKey) key, s);
+        val contentDigest = digest(canonizedJson, dig.alg());
 
+        if (contentDigest.equals(dig.val()))
+            log.debug("digest are equals");
+        else {
+            log.debug("digest form signature {} != {} ({} counted from canonical JSON)", dig.val(), contentDigest, dig.alg());
+            throw new SignatureException("Digital signature verification failed.");
+        }
         return doc;
     }
 
@@ -263,7 +269,7 @@ public class Gobl {
      * Computes the SHA-256 digest of the given canonical JSON string.
      *
      * @param canonicalJson the canonical JSON string to compute the digest for
-     * @return the SHA-256 digest of the canonical JSON string
+     * @return the hash digest of the canonical JSON as a hexadecimal string
      * @throws IllegalStateException if the SHA-256 algorithm is not available
      */
     public String digest(@NonNull String canonicalJson) {
@@ -272,7 +278,25 @@ public class Gobl {
             val sha = md.digest(canonicalJson.getBytes());
             return HexFormat.of().formatHex(sha);
         } catch (NoSuchAlgorithmException ex) {
-            throw new IllegalStateException(ex);
+            throw new NoSuchDigestAlgorithmException(ex);
+        }
+    }
+
+    /**
+     * Generates a hash digest of the given canonical JSON using the specified algorithm.
+     *
+     * @param canonicalJson the canonical JSON content to generate the digest from
+     * @param algorithm the algorithm to use for generating the digest, one of: MD5, SHA1, SHA256, SHA384, SHA512
+     * @return the hash digest of the canonical JSON as a hexadecimal string
+     * @throws NoSuchDigestAlgorithmException if the specified algorithm is not supported
+     */
+    public String digest(@NonNull String canonicalJson, String algorithm) {
+        try {
+            val md = MessageDigest.getInstance(algorithm);
+            val sha = md.digest(canonicalJson.getBytes());
+            return HexFormat.of().formatHex(sha);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new NoSuchDigestAlgorithmException(ex);
         }
     }
 
