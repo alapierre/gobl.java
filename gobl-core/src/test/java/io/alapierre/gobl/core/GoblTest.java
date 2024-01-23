@@ -1,6 +1,7 @@
 package io.alapierre.gobl.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.alapierre.gobl.core.exceptions.NoSuchDigestAlgorithmException;
 import io.alapierre.gobl.core.signature.EcdsaSigner;
 import io.alapierre.gobl.core.signature.JsonCanoniser;
 import io.alapierre.gobl.core.signature.KeySupport;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.Key;
@@ -117,6 +119,13 @@ class GoblTest {
     }
 
     @Test
+    void parseInvoice() throws Exception {
+        val invoice = gobl.parseInvoice( Path.of("src/test/resources/invoice.json"));
+        System.out.println(invoice);
+        assertNotNull(invoice);
+    }
+
+    @Test
     void save() throws Exception {
 
         Invoice invoice = new Invoice();
@@ -135,6 +144,23 @@ class GoblTest {
         val sig = gobl.digest(invoice);
         System.out.println(sig);
         assertEquals("b6cd1dab63d786cbc6694e4314c587a2660dd3fed1d8934600fc7c5067b8f893", sig);
+    }
+
+    @Test
+    public void digestObjectWithAlg() throws Exception {
+        val invoice = gobl.parseInvoice("src/test/resources/invoice.json");
+        val sig = gobl.digest(invoice, "sha256");
+        System.out.println(sig);
+        assertEquals("b6cd1dab63d786cbc6694e4314c587a2660dd3fed1d8934600fc7c5067b8f893", sig);
+    }
+
+    @Test
+    public void digest_NonExistentAlgorithm_ThrowsNoSuchDigestAlgorithmException() throws IOException {
+
+        val invoice = gobl.parseInvoice("src/test/resources/invoice.json");
+        final String nonExistentAlgorithm = "nonExistentAlgorithm";
+
+        assertThrows(NoSuchDigestAlgorithmException.class, () -> gobl.digest(invoice, nonExistentAlgorithm));
     }
 
     @Test
@@ -164,6 +190,19 @@ class GoblTest {
 
         Key publicKey = keySupport.loadKey(Path.of("src/test/resources/id_es256.pub.jwk"));
         signer.verify((ECPublicKey) publicKey, signature);
+
+    }
+
+    @Test
+    void signInvoice() throws Exception {
+        KeySupport keySupport = new KeySupport();
+        Key key = keySupport.loadKey(Path.of("src/test/resources/id_es256.jwk"));
+        val string = gobl.signInvoice(Path.of("src/test/resources/invoice.json"), (ECPrivateKey) key, UUID.randomUUID());
+        System.out.println(string);
+
+        Assertions.assertNotNull(string);
+        Assertions.assertTrue(string.contains("sigs"));
+        Assertions.assertTrue(string.contains("doc"));
 
     }
 
