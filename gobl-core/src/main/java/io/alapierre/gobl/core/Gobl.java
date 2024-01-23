@@ -266,6 +266,18 @@ public class Gobl {
     }
 
     /**
+     * Calculates the digest of the given invoice using the specified algorithm.
+     *
+     * @param invoice   The invoice to calculate the digest for. Cannot be null.
+     * @param algorithm The algorithm to use for calculating the digest, one of: MD5, SHA1, SHA256, SHA384, SHA512.
+     * @return The digest of the invoice.
+     * @throws IOException If there is an error parsing the invoice.
+     */
+    public String digest(@NonNull Invoice invoice, String algorithm) throws IOException {
+        return digest(jsonCanoniser.parse(invoice), algorithm);
+    }
+
+    /**
      * Computes the SHA-256 digest of the given canonical JSON string.
      *
      * @param canonicalJson the canonical JSON string to compute the digest for
@@ -286,7 +298,7 @@ public class Gobl {
      * Generates a hash digest of the given canonical JSON using the specified algorithm.
      *
      * @param canonicalJson the canonical JSON content to generate the digest from
-     * @param algorithm the algorithm to use for generating the digest, one of: MD5, SHA1, SHA256, SHA384, SHA512
+     * @param algorithm the algorithm to use for generating the digest, one of: MD5, SHA1, SHA256, SHA384, SHA512.
      * @return the hash digest of the canonical JSON as a hexadecimal string
      * @throws NoSuchDigestAlgorithmException if the specified algorithm is not supported
      */
