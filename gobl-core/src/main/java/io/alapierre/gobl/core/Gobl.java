@@ -68,7 +68,7 @@ public class Gobl {
         val doc = objectMapper.treeToValue(docNode, clazz);
         val canonizedJson = jsonCanoniser.parse(doc);
 
-        if(sigs.isEmpty()) {
+        if(sigs== null || sigs.isEmpty()) {
             throw new SignatureException("No signatures found.");
         } else if (sigs.size() > 1) {
             throw new SignatureException("Multiple signatures are not supported.");

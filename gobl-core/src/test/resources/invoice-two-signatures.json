@@ -1,0 +1,76 @@
+{
+  "$schema" : "https://gobl.org/draft-0/envelope",
+  "head" : {
+    "uuid" : "c5aa890a-f107-47c9-8ac2-2510476a28b8",
+    "dig" : {
+      "alg" : "sha256",
+      "val" : "b6cd1dab63d786cbc6694e4314c587a2660dd3fed1d8934600fc7c5067b8f893"
+    }
+  },
+  "sigs" : [
+    "eyJraWQiOiI5M2QyYWI1OS00OTQ0LTQ5ZTItYTc5My0yYjMxM2ViNTI1OWIiLCJhbGciOiJFUzI1NiJ9.eyJ1dWlkIjoiYzVhYTg5MGEtZjEwNy00N2M5LThhYzItMjUxMDQ3NmEyOGI4IiwiZGlnIjp7ImFsZyI6InNoYTI1NiIsInZhbCI6ImI2Y2QxZGFiNjNkNzg2Y2JjNjY5NGU0MzE0YzU4N2EyNjYwZGQzZmVkMWQ4OTM0NjAwZmM3YzUwNjdiOGY4OTMifX0.hGYU3FlF8p7s8jhZi-C8ZZWZw03I-ZTMqJYEpytrIzXg6dcGVyKomOlmnYkvlPQ-m1lS5MUACXQPchOgcDOF4g",
+    "eyJraWQiOiI5M2QyYWI1OS00OTQ0LTQ5ZTItYTc5My0yYjMxM2ViNTI1OWIiLCJhbGciOiJFUzI1NiJ9.eyJ1dWlkIjoiYzVhYTg5MGEtZjEwNy00N2M5LThhYzItMjUxMDQ3NmEyOGI4IiwiZGlnIjp7ImFsZyI6InNoYTI1NiIsInZhbCI6ImI2Y2QxZGFiNjNkNzg2Y2JjNjY5NGU0MzE0YzU4N2EyNjYwZGQzZmVkMWQ4OTM0NjAwZmM3YzUwNjdiOGY4OTMifX0.hGYU3FlF8p7s8jhZi-C8ZZWZw03I-ZTMqJYEpytrIzXg6dcGVyKomOlmnYkvlPQ-m1lS5MUACXQPchOgcDOF4g"
+  ],
+  "doc" : {
+    "type" : "standard",
+    "code" : "123456789",
+    "issue_date" : "2024-01-15",
+    "currency" : "PLN",
+    "supplier" : {
+      "name" : "ABC sp. z o.o.",
+      "tax_id" : {
+        "country" : "PL",
+        "code" : "6891152920"
+      },
+      "addresses" : [ {
+        "num" : "109",
+        "street" : "Warszawska",
+        "locality" : "Łomianki",
+        "code" : "05-092"
+      } ]
+    },
+    "customer" : {
+      "name" : "Customer sp. z o.o.",
+      "tax_id" : {
+        "country" : "PL",
+        "code" : "2222222222"
+      }
+    },
+    "lines" : [ {
+      "i" : 1,
+      "quantity" : "1",
+      "item" : {
+        "name" : "myszka",
+        "price" : "100.00"
+      },
+      "sum" : "100.00",
+      "taxes" : [ {
+        "cat" : "VAT",
+        "rate" : "standard",
+        "percent" : "23.0%"
+      } ],
+      "total" : "100.00"
+    } ],
+    "totals" : {
+      "sum" : "100.00",
+      "total" : "100.00",
+      "taxes" : {
+        "categories" : [ {
+          "code" : "VAT",
+          "rates" : [ {
+            "key" : "standard",
+            "base" : "100.00",
+            "percent" : "23.0%",
+            "amount" : "23.00"
+          } ],
+          "amount" : "23.00"
+        } ],
+        "sum" : "23.00"
+      },
+      "tax" : "23.00",
+      "total_with_tax" : "123.00",
+      "payable" : "123.00"
+    },
+    "$schema" : "https://gobl.org/draft-0/bill/invoice"
+  }
+}

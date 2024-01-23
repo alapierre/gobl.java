@@ -147,7 +147,7 @@ class GoblTest {
     }
 
     @Test
-    public void digestObjectWithAlg() throws Exception {
+    void digestObjectWithAlg() throws Exception {
         val invoice = gobl.parseInvoice("src/test/resources/invoice.json");
         val sig = gobl.digest(invoice, "sha256");
         System.out.println(sig);
@@ -155,7 +155,7 @@ class GoblTest {
     }
 
     @Test
-    public void digest_NonExistentAlgorithm_ThrowsNoSuchDigestAlgorithmException() throws IOException {
+    void digest_NonExistentAlgorithm_ThrowsNoSuchDigestAlgorithmException() throws IOException {
 
         val invoice = gobl.parseInvoice("src/test/resources/invoice.json");
         final String nonExistentAlgorithm = "nonExistentAlgorithm";
@@ -215,6 +215,36 @@ class GoblTest {
 
         System.out.println(invoice);
         assertNotNull(invoice);
+    }
+
+    @Test
+    void parseIncorrectDocument() throws IOException {
+
+        File file = new File("src/test/resources/invoice.json");
+
+        assertThrows(IllegalArgumentException.class, () ->
+                gobl.extractFromEnvelope(file, Invoice.class, new KeySupport().generate().publicKey()));
+
+    }
+
+    @Test
+    void parseNotSignedDocument() throws IOException {
+
+        File file = new File("src/test/resources/envelop-not-signed.json");
+
+        assertThrows(SignatureException.class, () ->
+                gobl.extractFromEnvelope(file, Invoice.class, new KeySupport().generate().publicKey()));
+
+    }
+
+    @Test
+    void parseMoreThanOneSignedDocument() throws IOException {
+
+        File file = new File("src/test/resources/invoice-two-signatures.json");
+
+        assertThrows(SignatureException.class, () ->
+                gobl.extractFromEnvelope(file, Invoice.class, new KeySupport().generate().publicKey()));
+
     }
 
     @Test
