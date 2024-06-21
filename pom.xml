@@ -52,7 +52,7 @@
         <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
         <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
         <org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
-        <jjwt.version>0.12.3</jjwt.version>
+        <jjwt.version>0.12.6</jjwt.version>
         <junit.version>5.10.1</junit.version>
     </properties>
 
